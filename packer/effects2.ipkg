@@ -1,0 +1,6 @@
+package effects2
+
+opts = "--nobasepkgs --partial-eval --typeintype -i ../prelude -i ../base"
+
+modules = Effects2
+        , Effect.State2

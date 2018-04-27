@@ -31,3 +31,6 @@ runner = do x <- get2
 
 testt : (Int, Int)
 testt = runPureInit [20] (do runner)
+
+main : IO ()
+main = putStrLn $ show testt

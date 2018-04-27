@@ -1,0 +1,7 @@
+package Generator
+
+modules = Generator
+opts = "-p effects"
+
+executable = generate
+main = Generator

@@ -46,7 +46,7 @@ loopr xs with (xs)
     | [] = pure Nothing
     | (y :: ys) = case !get of
                      0 => pure $ Just y
-                     x => do put (!get - 1)
+                     t => do put (!get - 1)
                              loopr ys
 
 example : List a -> (n : Int) -> Maybe a
@@ -55,10 +55,6 @@ example xs n = runPureInit [n] (loopr xs)
 problem3 : Eff (Maybe a) ['ListR ::: STATE (List a), 'Numb ::: STATE Int]
 problem3 = do xs <- 'ListR :- get
               y <- 'Numb :- get
-              pure $ example xs y
-    where
-      loop : List a -> Eff (Maybe a) [STATE Int]
-      loop xs with (xs)
-          | [] = pure Nothing
-          | (y :: ys) = do x <- get
-                           pure $ Just y
+              ?pure
+              --pure $ example xs y
+

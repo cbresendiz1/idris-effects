@@ -110,6 +110,28 @@ Handler Conc m where
 yieldr : Eff () [CONC (List a)]
 yieldr = call Yieldr
 
+data Concert : Effect where
+    Nop : Concert () (Maybe a) (\x => (Maybe a))
+
+CONCERT : Type -> EFFECT
+CONCERT t = MkEff t Concert
+
+--Handler Concert Maybe where
+--    handle res (Nop) k = k () Nothing
+   
+data TR a = Leaf | Node (TR a) a (TR a)
+
+iter : (a -> b) -> TR a -> ()
+iter f tr with (tr)
+    | Leaf = ()
+    | Node l x r = do iter f l
+                      f x
+                      iter f r
+
+
+
+-- What is a computation context and why doesn't it work with State Int, but it works with Maybe
+
 --- ---------------------
 --- --- New Scheduler ---
 --- ---------------------
@@ -151,41 +173,42 @@ Handler Selection List where
 SELECT : EFFECT
 SELECT = MkEff () Selection
 
+select : List a -> Eff a [SELECT]
+select xs = call (Select xs)
+
+nonD : Eff Int [SELECT]
+nonD = select [1..100]
+
+runtern : Maybe Int
+runtern = run {m = Maybe} nonD
+
 -- ---------------------
 -- ---- New Effect -----
 -- ---------------------
 
 data Gen : Effect where
-    Yield  : b -> Gen () a (\x => b)
-    Next   : (Gen a)     a (\x => a)
+    Yield  : b -> Gen b c (\x => c)
     -- next
 
 GENNER : Type -> EFFECT
 GENNER t = MkEff t Gen
 
-queue : List a
-queue = []
-          
-getCont : a -> Eff a [STATE (List a)]
-getCont k = do put (k :: queue)
-               pure k
 
-data Cont f k = FunT f k
-
-data Kun a Nat = FT (Nat -> Nat) (Maybe a)
 
 --handle : resource -> (eff : e t resource resource') -> ((x : t) -> resource' x -> m a) -> m a
 Handler Gen m where
-    handle fres (Yield n) s = ?quest -- (runPureInit [someFun] (getCont k)) () n
-    handle fres Next      k = ?hmm   --k res upd
+    handle fres (Yield n) k = f k n
+      where
+        f l m = l m fres
+--    handle fres Next      k = k () fres
 
-yield : a -> Eff () [GENNER a]
-yield n = call (Yield n)
 
-next : Eff a [GENNER a]
-next = call Next
-
-nextM : y -> Eff a [GENNER a]
+yieldE : a -> Eff a [GENNER b]
+yieldE n = call (Yield n)
+    
+--randomFunction : Eff () [STUFF]
+--randomFunction = do yield 3
+--                    randomFunction
 
 --test : Eff () [GENNER (List a)]
 --test = do yield 3

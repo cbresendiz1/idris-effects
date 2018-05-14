@@ -1,0 +1,7 @@
+package hanger
+
+modules = VectMissing, Hanger
+opts = "-p effects"
+
+executable = hanger.x
+main = hanger

@@ -72,18 +72,22 @@ main2 = run prn
 main : IO ()
 main = run  prn
 
-contin : a -> Eff a [STATE x]
-contin n = pure $ n
+-- Does not type check ---
 
 data Generator : Effect where
-  Yield : b -> sig Generator () a b
+  Yield : b -> sig Generator () a
   Next  :      sig Generator a a
   
 GENERATOR : Type -> EFFECT
 GENERATOR t = MkEff t Generator
 
-Handler Generator m where
-  handle xs (Yield n) k = runInit [k] (contin n)
+Handler Generator Maybe where
+  handle _ (Yield n) k = runInit [k] (contin n) where
+--  handle _ (Yield n) k = runInit [k] (contin n) where
+      contin : a -> Eff a [STATE x]
+      contin n = pure n
+--  handle _ (Yield n) k = do x <- (runInit [k] (contin n));
+--                            return x
 --  handle st Next k      = k st st
   
 -------------------------------

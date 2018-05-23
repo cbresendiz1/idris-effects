@@ -72,20 +72,48 @@ main2 = run prn
 main : IO ()
 main = run  prn
 
--- Does not type check ---
+using (m : Type -> Type)
+    data Gentle : Type -> Type where
+        J : (n -> Gentle a -> IO a) -> Gentle a
+        L : (() -> Gentle a -> IO a) -> Gentle a
 
-data Generator : Effect where
-  Yield : b -> sig Generator () a
-  Next  :      sig Generator a a
+    -- Does not type check ---
+    data Generator : Effect where
+      Yield : a -> Generator () (Gentle a) (\x => Gentle a)
+      Next  : Generator a       (Gentle a) (\x => Gentle a)
   
-GENERATOR : Type -> EFFECT
-GENERATOR t = MkEff t Generator
+    GENERATOR : Type -> EFFECT
+    GENERATOR t = MkEff t Generator
 
-Handler Generator Maybe where
-  handle _ (Yield n) k = runInit [k] (contin n) where
+    yield : a -> Eff () [GENERATOR (Gentle a)]
+    yield n = call (Yield n)
+
+    next : Eff a [GENERATOR (Gentle a)]
+    next = call (Next)
+
+    Handler Generator IO where
+       handle (J j) (Yield n) k = j n  (L k)
+       handle (L l) (Next)    k = l () (J k)
+--    handle res (Next)    k = res 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 --  handle _ (Yield n) k = runInit [k] (contin n) where
-      contin : a -> Eff a [STATE x]
-      contin n = pure n
 --  handle _ (Yield n) k = do x <- (runInit [k] (contin n));
 --                            return x
 --  handle st Next k      = k st st
@@ -144,3 +172,7 @@ runT 0 = ?rhs
 ----------------------------------
 --------- Selection --------------
 ----------------------------------
+
+-- Local Variables:
+-- idris-load-packages: ("effects")
+-- End:

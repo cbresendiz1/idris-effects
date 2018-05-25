@@ -72,29 +72,24 @@ main2 = run prn
 main : IO ()
 main = run  prn
 
-using (m : Type -> Type)
+using (ma : Type -> Type, res : Type, resk : res -> Type, ty : Type, un : ())
     data Gentle : Type -> Type where
-        J : (n -> Gentle a -> IO a) -> Gentle a
-        L : (() -> Gentle a -> IO a) -> Gentle a
-
-    -- Does not type check ---
+        J : (d : lw -> Gentle lw -> ma a) -> Gentle lw
+        L : (d : () -> Gentle ja -> ma a) -> Gentle ja
+--        J : (a -> Gentle a -> Maybe a) -> Gentle a
+--        L : (() -> Gentle a -> Maybe a) -> Gentle a
+        
     data Generator : Effect where
-      Yield : a -> Generator () (Gentle a) (\x => Gentle a)
-      Next  : Generator a       (Gentle a) (\x => Gentle a)
-  
-    GENERATOR : Type -> EFFECT
-    GENERATOR t = MkEff t Generator
+        Next  : Generator ty       (Gentle ty) (\x  => Gentle ty)
+        Yield : ty -> Generator () (Gentle ty) (\x  => Gentle ty)
 
-    yield : a -> Eff () [GENERATOR (Gentle a)]
-    yield n = call (Yield n)
+Handler Generator ma where
+    handle (J j) (Yield v) k = j v (L k)
 
-    next : Eff a [GENERATOR (Gentle a)]
-    next = call (Next)
-
-    Handler Generator IO where
-       handle (J j) (Yield n) k = j n  (L k)
-       handle (L l) (Next)    k = l () (J k)
---    handle res (Next)    k = res 
+--    Handler Generator Maybe where
+--       handle (J j) (Yield n) k = j n  (J k)
+--       handle (L l) (Next)    k = l () (J k)       
+       --    handle res (Next)    k = res 
 
 
 

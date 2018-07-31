@@ -5,5 +5,8 @@
 build :
 	idris yieldStdLn.idr -p pipes -o yieldStdLn.x
 
+buildGen:
+	idris GenEffect.idr -p effects -o nextCont.x
+
 run : build
 	./yieldStdLn.x
